@@ -45,7 +45,7 @@ runs:
 
     - name: Setup Turbo cache server
       if: ${{ inputs.turbo-s3-bucket != '' }}
-      uses: brunojppb/turbo-cache-server@2.0.9
+      uses: brunojppb/turbo-cache-server@2.0.14
       env:
         S3_ENDPOINT: ${{ inputs.turbo-s3-endpoint }}
         S3_REGION: ${{ inputs.turbo-s3-region }}
