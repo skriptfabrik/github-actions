@@ -6,8 +6,16 @@ inputs:
     description: The Node.js registry URL to use
     required: false
 
+  node-version:
+    description: The Node.js version to use
+    required: false
+
   node-version-file:
     description: The file to read the Node.js version from
+    required: false
+
+  pnpm-version:
+    description: The version of PNPM to use
     required: false
 
   turbo-s3-endpoint:
@@ -30,23 +38,51 @@ inputs:
     description: S3 secret key for Turbo cache server
     required: false
 
+  turbo-team:
+    description: The Turbo team to use for caching
+    required: false
+
+  turbo-token:
+    description: The value will be checked by the cache server
+    required: false
+
 runs:
   using: composite
   steps:
     - name: Setup PNPM
       uses: pnpm/action-setup@v4
+      with:
+        version: ${{ inputs.pnpm-version }}
 
     - name: Setup Node.js
       uses: actions/setup-node@v6
       with:
+        node-version: ${{ inputs.node-version }}
         node-version-file: ${{ inputs.node-version-file }}
         cache: pnpm
         registry-url: ${{ inputs.node-registry-url }}
+
+    - name: Setup Turbo environment variables
+      if: ${{ inputs.turbo-s3-bucket != '' }}
+      run: |
+        echo "TURBO_API=http://127.0.0.1:8585" >> $GITHUB_ENV
+        if [ "${{ github.event_name }}" == "pull_request" ]; then
+          echo "TURBO_SCM_BASE=${{ github.event.pull_request.base.sha }}" >> $GITHUB_ENV
+        fi
+        if [ "${{ inputs.turbo-team }}" == "" ]; then
+          echo "TURBO_TEAM=${{ github.repository }}" >> $GITHUB_ENV
+        else
+          echo "TURBO_TEAM=${{ inputs.turbo-team }}" >> $GITHUB_ENV
+        fi
+        echo "TURBO_TELEMETRY_DISABLED=1" >> $GITHUB_ENV
+        echo "TURBO_TOKEN=${{ inputs.turbo-token }}" >> $GITHUB_ENV
+      shell: bash
 
     - name: Setup Turbo cache server
       if: ${{ inputs.turbo-s3-bucket != '' }}
       uses: brunojppb/turbo-cache-server@2.0.14
       env:
+        PORT: "8585"
         S3_ENDPOINT: ${{ inputs.turbo-s3-endpoint }}
         S3_REGION: ${{ inputs.turbo-s3-region }}
         S3_BUCKET_NAME: ${{ inputs.turbo-s3-bucket }}
