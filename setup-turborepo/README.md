@@ -1,10 +1,10 @@
 # setup-turborepo
 
-> Prepare and install everything for Turborepo
+> Setup PNPM, Node.js and the Turborepo remote cache server
 
 This action provides the following functionality for GitHub Actions users:
 
-* Setup PNPM, Node.js and the Turborepo remote cache server
+* Prepare everything for Turborepo
   * Specify the PNPM version in a [`packageManager`](https://nodejs.org/api/corepack.html) field in the `package.json` or
     as `pnpm-version` input
   * Enable PNPM cache
@@ -32,14 +32,14 @@ jobs:
 
 | Name                  | Required | Default                    | Description                                   |
 | --------------------- | -------- | -------------------------- | --------------------------------------------- |
-| `node-registry-url`   | `false`  | ``                         | The Node.js registry URL to use               |
-| `node-version`        | `false`  | ``                         | The Node.js version to use                    |
-| `node-version-file`   | `false`  | ``                         | The file to read the Node.js version from     |
-| `pnpm-version`        | `false`  | ``                         | The version of PNPM to use                    |
-| `turbo-s3-endpoint`   | `false`  | ``                         | S3 endpoint for Turbo cache server            |
-| `turbo-s3-region`     | `false`  | ``                         | S3 region for Turbo cache server              |
-| `turbo-s3-bucket`     | `false`  | ``                         | S3 bucket name for Turbo cache server         |
-| `turbo-s3-access-key` | `false`  | ``                         | S3 access key for Turbo cache server          |
-| `turbo-s3-secret-key` | `false`  | ``                         | S3 secret key for Turbo cache server          |
+| `node-registry-url`   | `false`  | `""`                       | The Node.js registry URL to use               |
+| `node-version`        | `false`  | `""`                       | The Node.js version to use                    |
+| `node-version-file`   | `false`  | `""`                       | The file to read the Node.js version from     |
+| `pnpm-version`        | `false`  | `""`                       | The version of PNPM to use                    |
+| `turbo-s3-endpoint`   | `false`  | `""`                       | S3 endpoint for Turbo cache server            |
+| `turbo-s3-region`     | `false`  | `""`                       | S3 region for Turbo cache server              |
+| `turbo-s3-bucket`     | `false`  | `""`                       | S3 bucket name for Turbo cache server         |
+| `turbo-s3-access-key` | `false`  | `""`                       | S3 access key for Turbo cache server          |
+| `turbo-s3-secret-key` | `false`  | `""`                       | S3 secret key for Turbo cache server          |
 | `turbo-team`          | `false`  | `${{ github.repository }}` | The Turbo team to use for caching             |
-| `turbo-token`         | `false`  | ``                         | The value will be checked by the cache server |
+| `turbo-token`         | `false`  | `""`                       | The value will be checked by the cache server |
