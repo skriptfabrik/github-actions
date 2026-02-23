@@ -5,6 +5,7 @@ updates:
     directories:
       - /
       - /build-expo-app
+      - /deploy-expo-app
       - /setup-turborepo
     schedule:
       interval: weekly

@@ -1,0 +1,127 @@
+name: Deploy Expo App
+description: Setup EAS and deploy an Expo web app to EAS
+
+inputs:
+  alias:
+    description: Alias to assign to the deployment
+    required: false
+
+  eas-project-id:
+    description: EAS project ID
+    required: true
+
+  eas-version:
+    description: EAS version to use
+    default: latest
+
+  environment:
+    description: Deployment environment
+    required: false
+
+  expo-token:
+    description: Token of your Expo account
+    required: true
+
+  working-directory:
+    description: Working directory for the build command
+    required: false
+
+outputs:
+  artifact-digest:
+    description: Deployment artifact digest
+    value: ${{ steps.upload.outputs.artifact-digest }}
+
+  artifact-id:
+    description: Deployment artifact ID
+    value: ${{ steps.upload.outputs.artifact-id }}
+
+  artifact-url:
+    description: URL to the deployment artifact
+    value: ${{ steps.upload.outputs.artifact-url }}
+
+  dashboard-url:
+    description: URL to deployment dashboard
+    value: ${{ fromJson(steps.deployment.outputs.result).dashboardUrl }}
+
+  identifier:
+    description: Deployment identifier
+    value: ${{ fromJson(steps.deployment.outputs.result).identifier }}
+
+  url:
+    description: URL to deployment
+    value: ${{ fromJson(steps.deployment.outputs.result).url }}
+
+runs:
+  using: composite
+  steps:
+    - name: Setup EAS
+      uses: expo/expo-github-action@v8
+      with:
+        eas-version: ${{ inputs.eas-version }}
+        eas-cache: false
+        packager: pnpm
+        token: ${{ inputs.expo-token }}
+
+    - name: Setup app
+      run: |
+        if [ ! -f "app.json" ]; then
+          echo "No app.json found. Please make sure you are in the correct directory or specify the working-directory input."
+          exit 1
+        fi
+        if [ "${{ inputs.eas-project-id }}" != "" ]; then
+          eas init --id=${{ inputs.eas-project-id }} --force --non-interactive
+        fi
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+
+    - name: Pull app environment variables
+      if: ${{ inputs.environment != '' }}
+      run: eas env:pull --environment=${{ inputs.environment }} --non-interactive
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+
+    - name: Setup app variables
+      id: setup-app-vars
+      run: |
+        if [ ! -f "package.json" ]; then
+          echo "No package.json found. Please make sure you are in the correct directory or specify the working-directory input."
+          exit 1
+        fi
+        echo "name=$(jq -r '.name' package.json)" >> $GITHUB_OUTPUT
+        echo "artifact-name=$(basename '${{ inputs.working-directory }}')" >> $GITHUB_OUTPUT
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+
+    - name: Build app dependencies
+      run: pnpm -s run build --filter=${{ steps.setup-app-vars.outputs.name }}^...
+      shell: bash
+
+    - name: Export web app
+      run: pnpm -s run export:web -- --source-maps --clear
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+
+    - name: Deploy web app
+      uses: actions/github-script@v8
+      id: deployment
+      with:
+        script: |
+          const args = ['deploy', '--export-dir=./build', '--json', '--non-interactive'];
+          const alias = core.getInput('alias');
+          if (alias !== '') {
+            if (alias === 'production') {
+              args.push('--prod');
+            } else {
+              args.push(`'--alias=${alias}'`);
+            }
+          }
+          const { stdout } = await exec.getExecOutput('eas', args, { cwd: core.getInput('working-directory') });
+          return JSON.parse(stdout);
+
+    - name: Upload deployment artifact
+      uses: actions/upload-artifact@v4
+      id: upload
+      with:
+        name: ${{ steps.setup-app-vars.outputs.artifact-name }}.zip
+        path: ${{ inputs.working-directory }}/build
+        retention-days: 7
