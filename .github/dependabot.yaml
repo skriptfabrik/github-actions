@@ -2,7 +2,10 @@ version: 2
 
 updates:
   - package-ecosystem: github-actions
-    directory: /setup-turborepo
+    directories:
+      - /
+      - /build-expo-app
+      - /setup-turborepo
     schedule:
       interval: weekly
     commit-message:

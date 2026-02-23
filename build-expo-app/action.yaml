@@ -1,0 +1,199 @@
+name: Build Expo App
+description: Setup Java, EAS and build an Expo app using EAS
+
+inputs:
+  eas-project-id:
+    description: EAS project ID
+    required: true
+
+  eas-version:
+    description: EAS version to use
+    default: latest
+
+  environment:
+    description: Build environment
+    required: false
+
+  expo-token:
+    description: Token of your Expo account
+    required: true
+
+  java-version:
+    description: The Java version to use (local builds only)
+    required: false
+
+  java-version-file:
+    description: The file to read the Java version from (local builds only)
+    required: false
+
+  local:
+    description: Run build locally?
+    default: "false"
+
+  platform:
+    description: Platform to build for (all/android/ios)
+    default: all
+
+  profile:
+    description: Name of the build profile
+    required: false
+
+  submit:
+    description: Auto submit to the store? (production profile only)
+    default: "false"
+
+  working-directory:
+    description: Working directory for the build command
+    required: false
+
+outputs:
+  app-build-version:
+    description: App build version
+    value: ${{ steps.build.outputs.result && fromJson(steps.build.outputs.result)[0].appBuildVersion }}
+
+  app-version:
+    description: App version
+    value: ${{ steps.build.outputs.result && fromJson(steps.build.outputs.result)[0].appVersion }}
+
+  artifact-digest:
+    description: Build artifact digest
+    value: ${{ steps.upload.outputs.artifact-digest }}
+
+  artifact-id:
+    description: Build artifact ID
+    value: ${{ steps.upload.outputs.artifact-id }}
+
+  artifact-url:
+    description: URL to the build artifact
+    value: ${{ steps.upload.outputs.artifact-url }}
+
+  profile:
+    description: Name of the build profile
+    value: ${{ steps.build.outputs.result && fromJson(steps.build.outputs.result)[0].buildProfile }}
+
+runs:
+  using: composite
+  steps:
+    - name: Setup variables
+      id: setup-vars
+      run: |
+        if [ "${{ inputs.java-version-file }}" != "" ]; then
+          echo "java-version-file=${{ inputs.java-version-file }}" >> $GITHUB_OUTPUT
+        elif [ -f ".java-version" ]; then
+          echo "java-version-file=.java-version" >> $GITHUB_OUTPUT
+        fi
+      shell: bash
+
+    - name: Setup Java
+      if: ${{ inputs.local == 'true' }}
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ inputs.java-version }}
+        java-version-file: ${{ steps.setup-vars.outputs.java-version-file }}
+        distribution: zulu
+        cache: gradle
+
+    - name: Setup EAS
+      uses: expo/expo-github-action@v8
+      with:
+        eas-version: ${{ inputs.eas-version }}
+        eas-cache: false
+        packager: pnpm
+        token: ${{ inputs.expo-token }}
+
+    - name: Setup app
+      id: setup-app
+      run: |
+        if [ ! -f "app.json" ]; then
+          echo "No app.json found. Please make sure you are in the correct directory or specify the working-directory input."
+          exit 1
+        fi
+        if [ "${{ inputs.eas-project-id }}" != "" ]; then
+          eas init --id=${{ inputs.eas-project-id }} --force --non-interactive
+        fi
+        if [ "${{ inputs.environment }}" != "" ]; then
+          eas update:configure --platform=${{ inputs.platform }} --environment=${{ inputs.environment }} --non-interactive
+        else
+          eas update:configure --platform=${{ inputs.platform }} --non-interactive
+        fi
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+
+    - name: Pull app environment variables
+      if: ${{ inputs.environment != '' }}
+      run: eas env:pull --environment=${{ inputs.environment }} --non-interactive
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+
+    - name: Setup app variables
+      id: setup-app-vars
+      run: |
+        if [ ! -f "package.json" ]; then
+          echo "No package.json found. Please make sure you are in the correct directory or specify the working-directory input."
+          exit 1
+        fi
+        echo "name=$(jq -r '.name' package.json)" >> $GITHUB_OUTPUT
+        echo "artifact-name=$(basename '${{ inputs.working-directory }}')" >> $GITHUB_OUTPUT
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+
+    - name: Build app dependencies
+      if: ${{ inputs.local == 'true' }}
+      run: pnpm -s run build --filter=${{ steps.setup-app-vars.outputs.name }}^...
+      shell: bash
+
+    - name: Build app
+      uses: actions/github-script@v8
+      id: build
+      env:
+        ARTIFACT_NAME: ${{ steps.setup-app-vars.outputs.artifact-name }}
+      with:
+        script: |
+          const args = ['build', '--json', '--non-interactive'];
+          const platform = core.getInput('platform');
+          if (platform !== '') {
+            args.push(`'--platform=${ platform }'`);
+          }
+          const profile = core.getInput('profile');
+          if (profile !== '') {
+            args.push(`'--profile=${ profile }'`);
+          }
+          const submit = core.getInput('submit');
+          if (profile === 'production' && submit === 'true') {
+            args.push('--auto-submit');
+          }
+          const local = core.getInput('local');
+          if (local === 'true') {
+            args.push('--local');
+            if (profile === 'production') {
+              args.push(`'--output=build/${ process.env.ARTIFACT_NAME }.aab'`);
+            } else {
+              args.push(`'--output=build/${ process.env.ARTIFACT_NAME }.apk'`);
+            }
+          } else {
+            args.push('--wait');
+          }
+          const { stdout } = await exec.getExecOutput('eas', args, { cwd: core.getInput('working-directory') });
+          return JSON.parse(stdout);
+
+    - name: Download app
+      if: ${{ steps.build.outputs.result && inputs.local != 'true' }}
+      env:
+        ARTIFACT_NAME: ${{ steps.setup-app-vars.outputs.artifact-name }}
+      run: |
+        mkdir -p build
+        if [ "${{ fromJson(steps.build.outputs.result)[0].buildProfile }}" = "production" ]; then
+          curl -L ${{ fromJson(steps.build.outputs.result)[0].artifacts.buildUrl }} --output build/${ARTIFACT_NAME}.aab
+        else
+          curl -L ${{ fromJson(steps.build.outputs.result)[0].artifacts.buildUrl }} --output build/${ARTIFACT_NAME}.apk
+        fi
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v4
+      id: upload
+      with:
+        name: ${{ steps.setup-app-vars.outputs.artifact-name }}.zip
+        path: ${{ inputs.working-directory }}/build
+        retention-days: 7
