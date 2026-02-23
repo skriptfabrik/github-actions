@@ -86,7 +86,7 @@ runs:
 
     - name: Setup Java
       if: ${{ inputs.local == 'true' }}
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5
       with:
         java-version: ${{ inputs.java-version }}
         java-version-file: ${{ steps.setup-vars.outputs.java-version-file }}
