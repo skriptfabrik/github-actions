@@ -11,11 +11,6 @@ This action provides the following functionality for GitHub Actions users:
   * Enable Turborepo remote cache when a bucket is passed
 * Install dependencies with PNPM
 * Export environment variables for Turborepo
-  * `TURBO_API`: The URL of the Turbo cache server
-  * `TURBO_SCM_BASE`: The bashe sha when the action is used in a `pull_request` workflow
-  * `TURBO_TEAM`: see `turbo-team` input
-  * `TURBO_TELEMETRY_DISABLED`: Telemetry is disabled for CI usage
-  * `TURBO_TOKEN`: see `turbo-token` input
 
 ## Usage
 
@@ -43,3 +38,21 @@ jobs:
 | `turbo-s3-secret-key` | `false`  | `""`                       | S3 secret key for Turbo cache server          |
 | `turbo-team`          | `false`  | `${{ github.repository }}` | The Turbo team to use for caching             |
 | `turbo-token`         | `false`  | `""`                       | The value will be checked by the cache server |
+
+## Outputs
+
+| Name            | Description                   |
+| --------------- | ----------------------------- |
+| `node-version`  | The installed Node.js version |
+| `pnpm-version`  | The installed PNPM version    |
+| `turbo-version` | The installed Turbo version   |
+
+## Environment exports
+
+| Name                       | Description                                                        |
+| -------------------------- | ------------------------------------------------------------------ |
+| `TURBO_API`                | The URL of the Turbo cache server                                  |
+| `TURBO_SCM_BASE`           | The bashe sha when the action is used in a `pull_request` workflow |
+| `TURBO_TEAM`               | See `turbo-team` input                                             |
+| `TURBO_TELEMETRY_DISABLED` | Telemetry is disabled for CI usage                                 |
+| `TURBO_TOKEN`              | See `turbo-token` input                                            |

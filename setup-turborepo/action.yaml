@@ -46,6 +46,19 @@ inputs:
     description: The value will be checked by the cache server
     required: false
 
+outputs:
+  node-version:
+    description: The installed node version
+    value: ${{ steps.versions.outputs.node-version }}
+
+  pnpm-version:
+    description: The installed PNPM version
+    value: ${{ steps.versions.outputs.pnpm-version }}
+
+  turbo-version:
+    description: The installed Turbo version
+    value: ${{ steps.versions.outputs.turbo-version }}
+
 runs:
   using: composite
   steps:
@@ -72,7 +85,7 @@ runs:
         cache: pnpm
         registry-url: ${{ inputs.node-registry-url }}
 
-    - name: Setup Turbo environment variables
+    - name: Export Turbo environment variables
       if: ${{ inputs.turbo-s3-bucket != '' }}
       run: |
         echo "TURBO_API=http://127.0.0.1:8585" >> $GITHUB_ENV
@@ -101,4 +114,18 @@ runs:
 
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
+      shell: bash
+
+    - name: Export version information
+      id: versions
+      run: |
+        node_version=$(node --version)
+        echo "Installed Node.js version: ${node_version#v}"
+        echo "node-version=${node_version#v}" >> $GITHUB_OUTPUT
+        pnpm_version=$(pnpm --version)
+        echo "Installed PNPM version: $pnpm_version"
+        echo "pnpm-version=$pnpm_version" >> $GITHUB_OUTPUT
+        turbo_version=$(pnpm ls --depth 0 turbo | grep -e '^turbo' | cut -d' ' -f2)
+        echo "Installed Turbo version: $turbo_version"
+        echo "turbo-version=$turbo_version" >> $GITHUB_OUTPUT
       shell: bash
