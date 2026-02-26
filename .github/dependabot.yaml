@@ -6,6 +6,7 @@ updates:
       - /
       - /build-expo-app
       - /deploy-expo-app
+      - /setup-java
       - /setup-turborepo
     schedule:
       interval: weekly

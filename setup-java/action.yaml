@@ -1,0 +1,46 @@
+name: Setup Java
+description: Setup Java
+
+inputs:
+  java-distribution:
+    description: The Java distribution to use
+    default: zulu
+
+  java-version:
+    description: The Java version to use
+    required: false
+
+  java-version-file:
+    description: The file to read the Java version from
+    required: false
+
+outputs:
+  java-distribution:
+    description: The Java distribution that was set up
+    value: ${{ steps.java-setup.outputs.distribution }}
+
+  java-version:
+    description: The installed Java version
+    value: ${{ steps.java-setup.outputs.java-version }}
+
+runs:
+  using: composite
+  steps:
+    - name: Setup variables
+      id: setup-vars
+      run: |
+        if [ "${{ inputs.java-version-file }}" != "" ]; then
+          echo "java-version-file=${{ inputs.java-version-file }}" >> $GITHUB_OUTPUT
+        elif [ -f ".java-version" ]; then
+          echo "java-version-file=.java-version" >> $GITHUB_OUTPUT
+        fi
+      shell: bash
+
+    - name: Setup Java
+      id: java-setup
+      uses: actions/setup-java@v5
+      with:
+        java-version: ${{ inputs.java-version }}
+        java-version-file: ${{ steps.setup-vars.outputs.java-version-file }}
+        distribution: ${{ inputs.java-distribution }}
+        cache: gradle
