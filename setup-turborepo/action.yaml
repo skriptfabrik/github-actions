@@ -78,6 +78,7 @@ runs:
         version: ${{ inputs.pnpm-version }}
 
     - name: Setup Node.js
+      id: setup-node
       uses: actions/setup-node@v6
       with:
         node-version: ${{ inputs.node-version }}
@@ -119,9 +120,9 @@ runs:
     - name: Export version information
       id: versions
       run: |
-        node_version=$(node --version)
-        echo "Installed Node.js version: ${node_version#v}"
-        echo "node-version=${node_version#v}" >> $GITHUB_OUTPUT
+        node_version=${{ steps.setup-node.outputs.node-version }}
+        echo "Installed Node.js version: $node_version"
+        echo "node-version=$node_version" >> $GITHUB_OUTPUT
         pnpm_version=$(pnpm --version)
         echo "Installed PNPM version: $pnpm_version"
         echo "pnpm-version=$pnpm_version" >> $GITHUB_OUTPUT
