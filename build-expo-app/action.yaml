@@ -191,7 +191,7 @@ runs:
       working-directory: ${{ inputs.working-directory }}
 
     - name: Upload build artifact
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       id: upload
       with:
         name: ${{ steps.setup-app-vars.outputs.artifact-name }}.zip
