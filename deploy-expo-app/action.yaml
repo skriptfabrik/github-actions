@@ -1,29 +1,13 @@
 name: Deploy Expo App
-description: Setup EAS and deploy an Expo web app to EAS
+description: Deploy an Expo web app using EAS
 
 inputs:
   alias:
     description: Alias to assign to the deployment
     required: false
 
-  eas-project-id:
-    description: EAS project ID
-    required: true
-
-  eas-version:
-    description: EAS version to use
-    default: latest
-
-  environment:
-    description: Deployment environment
-    required: false
-
-  expo-token:
-    description: Token of your Expo account
-    required: true
-
   working-directory:
-    description: Working directory for the build command
+    description: Working directory for the deploy command
     required: false
 
 outputs:
@@ -54,74 +38,57 @@ outputs:
 runs:
   using: composite
   steps:
-    - name: Setup EAS
-      uses: expo/expo-github-action@v8
-      with:
-        eas-version: ${{ inputs.eas-version }}
-        eas-cache: false
-        packager: pnpm
-        token: ${{ inputs.expo-token }}
-
-    - name: Setup app
+    - name: Setup variables
+      id: setup-vars
       run: |
-        if [ ! -f "app.json" ]; then
-          echo "No app.json found. Please make sure you are in the correct directory or specify the working-directory input."
-          exit 1
+        if [ -n "$EAS_WORKING_DIRECTORY" ] && [ -f "$EAS_WORKING_DIRECTORY/.env.local" ]; then
+          echo "sentry-auth-token=$(grep SENTRY_AUTH_TOKEN "$EAS_WORKING_DIRECTORY/.env.local" | cut -d= -f2-)" >> $GITHUB_OUTPUT
         fi
-        if [ "${{ inputs.eas-project-id }}" != "" ]; then
-          eas init --id=${{ inputs.eas-project-id }} --force --non-interactive
-        fi
-      shell: bash
-      working-directory: ${{ inputs.working-directory }}
-
-    - name: Pull app environment variables
-      if: ${{ inputs.environment != '' }}
-      run: eas env:pull --environment=${{ inputs.environment }} --non-interactive
-      shell: bash
-      working-directory: ${{ inputs.working-directory }}
-
-    - name: Setup app variables
-      id: setup-app-vars
-      run: |
-        if [ ! -f "package.json" ]; then
-          echo "No package.json found. Please make sure you are in the correct directory or specify the working-directory input."
-          exit 1
-        fi
-        echo "name=$(jq -r '.name' package.json)" >> $GITHUB_OUTPUT
-        echo "artifact-name=$(basename '${{ inputs.working-directory }}')" >> $GITHUB_OUTPUT
-      shell: bash
-      working-directory: ${{ inputs.working-directory }}
-
-    - name: Build app dependencies
-      run: pnpm -s run build --filter=${{ steps.setup-app-vars.outputs.name }}^...
+        echo "artifact-name=$(basename '${{ inputs.working-directory || github.workspace }}')" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Export web app
-      run: pnpm -s run export:web -- --source-maps --clear
+      uses: actions/github-script@v8
+      env:
+        SENTRY_AUTH_TOKEN: ${{ steps.setup-vars.outputs.sentry-auth-token }}
+      with:
+        script: |
+          const { stdout } = await exec.getExecOutput('pnpm', ['list', 'expo'], { cwd: core.getInput('working-directory') || process.cwd() });
+          const args = ['-s', stdout.includes('expo') ? 'exec' : 'dlx', 'expo', 'export', '--output-dir', 'build', '--platform', 'web', '--clear'];
+          if (process.env.SENTRY_AUTH_TOKEN !== '') {
+            args.push('--source-maps');
+          }
+          await exec.exec('pnpm', args, { cwd: core.getInput('working-directory') || process.cwd() });
+
+    - name: Upload source maps to Sentry
+      if: ${{ steps.setup-vars.outputs.sentry-auth-token != '' }}
+      env:
+        SENTRY_AUTH_TOKEN: ${{ steps.setup-vars.outputs.sentry-auth-token }}
+      run: pnpm -s exec sentry-expo-upload-sourcemaps build
       shell: bash
-      working-directory: ${{ inputs.working-directory }}
+      working-directory: ${{ inputs.working-directory || github.workspace }}
 
     - name: Deploy web app
       uses: actions/github-script@v8
       id: deployment
       with:
         script: |
-          const args = ['deploy', '--export-dir=./build', '--json', '--non-interactive'];
+          const args = ['deploy', '--export-dir=build', '--json', '--non-interactive'];
           const alias = core.getInput('alias');
           if (alias !== '') {
             if (alias === 'production') {
               args.push('--prod');
             } else {
-              args.push(`'--alias=${alias}'`);
+              args.push(`--alias=${alias}`);
             }
           }
-          const { stdout } = await exec.getExecOutput('eas', args, { cwd: core.getInput('working-directory') });
+          const { stdout } = await exec.getExecOutput('eas', args, { cwd: core.getInput('working-directory') || process.cwd() });
           return JSON.parse(stdout);
 
     - name: Upload deployment artifact
       uses: actions/upload-artifact@v7
       id: upload
       with:
-        name: ${{ steps.setup-app-vars.outputs.artifact-name }}.zip
-        path: ${{ inputs.working-directory }}/build
+        name: ${{ steps.setup-vars.outputs.artifact-name }}.zip
+        path: ${{ inputs.working-directory || github.workspace }}/build
         retention-days: 7
