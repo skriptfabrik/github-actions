@@ -1,0 +1,97 @@
+name: Setup EAS
+description: Setup EAS
+
+inputs:
+  eas-project-id:
+    description: EAS project ID
+    required: true
+
+  eas-version:
+    description: EAS version to use
+    default: latest
+
+  eas-version-file:
+    description: The file to read the EAS version from
+    required: false
+
+  environment:
+    description: Build environment
+    required: false
+
+  expo-token:
+    description: Token of your Expo account
+    required: true
+
+  platform:
+    description: Platform to build for (all/android/ios/web)
+    default: all
+
+  working-directory:
+    description: Working directory for the build command
+    required: false
+
+outputs:
+  eas-version:
+    description: The installed EAS version
+    value: ${{ steps.export.outputs.eas-version }}
+
+runs:
+  using: composite
+  steps:
+    - name: Setup variables
+      id: setup-vars
+      run: |
+        if [ "${{ inputs.eas-version-file }}" != "" ]; then
+          echo "eas-version=$(cat '${{ inputs.eas-version-file }}')" >> $GITHUB_OUTPUT
+        elif [ -f "${{ inputs.working-directory || github.workspace }}/.eas-version" ]; then
+          echo "eas-version=$(cat '${{ inputs.working-directory || github.workspace }}/.eas-version')" >> $GITHUB_OUTPUT
+        else
+          echo "eas-version=${{ inputs.eas-version }}" >> $GITHUB_OUTPUT
+        fi
+      shell: bash
+
+    - name: Setup EAS
+      uses: expo/expo-github-action@v8
+      with:
+        eas-version: ${{ steps.setup-vars.outputs.eas-version }}
+        eas-cache: false
+        packager: pnpm
+        token: ${{ inputs.expo-token }}
+
+    - name: Setup app
+      run: |
+        if [ ! -f "${{ inputs.working-directory || github.workspace }}/app.json" ]; then
+          echo "No app.json found. Please make sure you are in the correct directory or specify the working-directory input."
+          exit 1
+        fi
+        if [ "${{ inputs.eas-project-id }}" != "" ]; then
+          eas init --id=${{ inputs.eas-project-id }} --force --non-interactive
+        fi
+        if [ "${{ inputs.platform }}" != "" ]; then
+          eas build:configure --platform=${{ inputs.platform }} --non-interactive
+          if [ "${{ inputs.environment }}" != "" ]; then
+            eas update:configure --platform=${{ inputs.platform }} --environment=${{ inputs.environment }} --non-interactive
+          else
+            eas update:configure --platform=${{ inputs.platform }} --non-interactive
+          fi
+        fi
+      shell: bash
+      working-directory: ${{ inputs.working-directory || github.workspace }}
+
+    - name: Pull environment variables
+      if: ${{ inputs.environment != '' }}
+      run: eas env:pull --environment=${{ inputs.environment }} --non-interactive
+      shell: bash
+      working-directory: ${{ inputs.working-directory || github.workspace }}
+
+    - name: Export EAS environment variables
+      run: echo "EAS_WORKING_DIRECTORY=$(realpath ${{ inputs.working-directory || github.workspace }})" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Export outputs
+      id: export
+      run: |
+        eas_version=$(eas --version 2>&1 | grep 'eas-cli/' | cut -d' ' -f1 | cut -d'/' -f2)
+        echo "Installed EAS CLI version: $eas_version"
+        echo "eas-version=$eas_version" >> $GITHUB_OUTPUT
+      shell: bash

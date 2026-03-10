@@ -6,6 +6,7 @@ updates:
       - /
       - /build-expo-app
       - /deploy-expo-app
+      - /setup-eas
       - /setup-java
       - /setup-turborepo
     schedule:
