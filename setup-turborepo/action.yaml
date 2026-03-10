@@ -65,6 +65,7 @@ runs:
     - name: Setup variables
       id: setup-vars
       run: |
+        # Determine Node.js version to install
         if [ "${{ inputs.node-version-file }}" != "" ]; then
           echo "node-version-file=${{ inputs.node-version-file }}" >> $GITHUB_OUTPUT
         elif [ -f ".node-version" ]; then
@@ -89,6 +90,7 @@ runs:
     - name: Export Turbo environment variables
       if: ${{ inputs.turbo-s3-bucket != '' }}
       run: |
+        # Set environment variables for Turbo CLI and cache server
         echo "TURBO_API=http://127.0.0.1:8585" >> $GITHUB_ENV
         if [ "${{ github.event_name }}" == "pull_request" ]; then
           echo "TURBO_SCM_BASE=${{ github.event.pull_request.base.sha }}" >> $GITHUB_ENV
@@ -120,6 +122,7 @@ runs:
     - name: Export outputs
       id: export
       run: |
+        # Get the installed Node.js, PNPM and Turbo versions
         node_version=${{ steps.setup-node.outputs.node-version }}
         echo "Installed Node.js version: $node_version"
         echo "node-version=$node_version" >> $GITHUB_OUTPUT

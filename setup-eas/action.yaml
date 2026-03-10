@@ -41,6 +41,7 @@ runs:
     - name: Setup variables
       id: setup-vars
       run: |
+        # Determine EAS version to install
         if [ "${{ inputs.eas-version-file }}" != "" ]; then
           echo "eas-version=$(cat '${{ inputs.eas-version-file }}')" >> $GITHUB_OUTPUT
         elif [ -f "${{ inputs.working-directory || github.workspace }}/.eas-version" ]; then
@@ -60,7 +61,8 @@ runs:
 
     - name: Setup app
       run: |
-        if [ ! -f "${{ inputs.working-directory || github.workspace }}/app.json" ]; then
+        # Link EAS project and configure EAS for the specified platform and environment
+        if [ ! -f "app.json" ]; then
           echo "No app.json found. Please make sure you are in the correct directory or specify the working-directory input."
           exit 1
         fi
@@ -68,7 +70,7 @@ runs:
           eas init --id=${{ inputs.eas-project-id }} --force --non-interactive
         fi
         if [ "${{ inputs.platform }}" != "" ]; then
-          eas build:configure --platform=${{ inputs.platform }} --non-interactive
+          eas build:configure --platform=${{ inputs.platform }}
           if [ "${{ inputs.environment }}" != "" ]; then
             eas update:configure --platform=${{ inputs.platform }} --environment=${{ inputs.environment }} --non-interactive
           else
@@ -91,6 +93,7 @@ runs:
     - name: Export outputs
       id: export
       run: |
+        # Get the installed EAS CLI version
         eas_version=$(eas --version 2>&1 | grep 'eas-cli/' | cut -d' ' -f1 | cut -d'/' -f2)
         echo "Installed EAS CLI version: $eas_version"
         echo "eas-version=$eas_version" >> $GITHUB_OUTPUT

@@ -49,6 +49,7 @@ runs:
     - name: Setup variables
       id: setup-vars
       run: |
+        # Determine artifact name prefix
         echo "artifact-name=$(basename '${{ inputs.working-directory || github.workspace }}')" >> $GITHUB_OUTPUT
       shell: bash
 
@@ -88,6 +89,7 @@ runs:
         ARTIFACT_NAME: ${{ steps.setup-vars.outputs.artifact-name }}
         WORKING_DIRECTORY: ${{ inputs.working-directory || github.workspace }}
       run: |
+        # Create build directory and download the artifact
         mkdir -p ${WORKING_DIRECTORY}/build
         if [ "${{ fromJson(steps.build.outputs.result)[0].buildProfile }}" = "production" ]; then
           curl -fLs ${{ fromJson(steps.build.outputs.result)[0].artifacts.buildUrl }} --output ${WORKING_DIRECTORY}/build/${ARTIFACT_NAME}.aab

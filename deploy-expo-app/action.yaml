@@ -41,10 +41,11 @@ runs:
     - name: Setup variables
       id: setup-vars
       run: |
+        # Determine artifact name prefix and Sentry auth token
+        echo "artifact-name=$(basename '${{ inputs.working-directory || github.workspace }}')" >> $GITHUB_OUTPUT
         if [ -n "$EAS_WORKING_DIRECTORY" ] && [ -f "$EAS_WORKING_DIRECTORY/.env.local" ]; then
           echo "sentry-auth-token=$(grep SENTRY_AUTH_TOKEN "$EAS_WORKING_DIRECTORY/.env.local" | cut -d= -f2-)" >> $GITHUB_OUTPUT
         fi
-        echo "artifact-name=$(basename '${{ inputs.working-directory || github.workspace }}')" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Export web app
@@ -54,6 +55,7 @@ runs:
       with:
         script: |
           const { stdout } = await exec.getExecOutput('pnpm', ['list', 'expo'], { cwd: core.getInput('working-directory') || process.cwd() });
+          console.log(stdout);
           const args = ['-s', stdout.includes('expo') ? 'exec' : 'dlx', 'expo', 'export', '--output-dir', 'build', '--platform', 'web', '--clear'];
           if (process.env.SENTRY_AUTH_TOKEN !== '') {
             args.push('--source-maps');
