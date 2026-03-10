@@ -12,3 +12,4 @@ Please take a closer look at the detailed instructions for the individual action
 - [setup-eas](setup-eas/README.md)
 - [setup-java](setup-java/README.md)
 - [setup-turborepo](setup-turborepo/README.md)
+- [update-expo-app](update-expo-app/README.md)

@@ -9,6 +9,7 @@ updates:
       - /setup-eas
       - /setup-java
       - /setup-turborepo
+      - /update-expo-app
     schedule:
       interval: weekly
     commit-message:

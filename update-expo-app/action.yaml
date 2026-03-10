@@ -1,0 +1,55 @@
+name: Update Expo App
+description: Update an Expo app using EAS
+
+inputs:
+  working-directory:
+    description: Working directory for the update command
+    required: false
+
+outputs:
+  project-id:
+    description: EAS project ID
+    value: ${{ steps.update.outputs.projectId }}
+
+  project-slug:
+    description: EAS project slug
+    value: ${{ steps.update.outputs.projectSlug }}
+
+  project-scheme:
+    description: EAS project scheme
+    value: ${{ steps.update.outputs.projectScheme }}
+
+  android-id:
+    description: Android update ID
+    value: ${{ steps.update.outputs.androidId }}
+
+  ios-id:
+    description: iOS update ID
+    value: ${{ steps.update.outputs.iosId }}
+
+  group-id:
+    description: Update group ID
+    value: ${{ steps.update.outputs.groupId }}
+
+  runtime-version:
+    description: Runtime version
+    value: ${{ steps.update.outputs.runtimeVersion }}
+
+  qr-url:
+    description: URL to QR code to load this update
+    value: ${{ steps.update.outputs.qr }}
+
+  url:
+    description: URL to platform-independent update
+    value: ${{ steps.update.outputs.link }}
+
+runs:
+  using: composite
+  steps:
+    - name: Update app
+      id: update
+      uses: expo/expo-github-action/preview@v8
+      with:
+        command: eas update --auto --branch ${{ github.head_ref || github.ref_name }} --non-interactive
+        comment: false
+        working-directory: ${{ inputs.working-directory || github.workspace }}
