@@ -41,24 +41,28 @@ runs:
     - name: Setup variables
       id: setup-vars
       run: |
+        # Determine artifact name prefix, Sentry auth token and working directory
+        working_directory="${{ inputs.working-directory || env.EAS_WORKING_DIRECTORY || github.workspace }}"
+        echo "artifact-name=$(basename "$working_directory")" >> $GITHUB_OUTPUT
         if [ -n "$EAS_WORKING_DIRECTORY" ] && [ -f "$EAS_WORKING_DIRECTORY/.env.local" ]; then
           echo "sentry-auth-token=$(grep SENTRY_AUTH_TOKEN "$EAS_WORKING_DIRECTORY/.env.local" | cut -d= -f2-)" >> $GITHUB_OUTPUT
         fi
-        echo "artifact-name=$(basename '${{ inputs.working-directory || github.workspace }}')" >> $GITHUB_OUTPUT
+        echo "working-directory=$working_directory" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Export web app
       uses: actions/github-script@v8
       env:
         SENTRY_AUTH_TOKEN: ${{ steps.setup-vars.outputs.sentry-auth-token }}
+        WORKING_DIRECTORY: ${{ steps.setup-vars.outputs.working-directory }}
       with:
         script: |
-          const { stdout } = await exec.getExecOutput('pnpm', ['list', 'expo'], { cwd: core.getInput('working-directory') || process.cwd() });
-          const args = ['-s', stdout.includes('expo') ? 'exec' : 'dlx', 'expo', 'export', '--output-dir', 'build', '--platform', 'web', '--clear'];
+          const output = await exec.getExecOutput('pnpm', ['-s', 'list', 'expo'], { cwd: process.env.WORKING_DIRECTORY });
+          const args = ['-s', output.stdout.includes('expo') ? 'exec' : 'dlx', 'expo', 'export', '--output-dir', 'build', '--platform', 'web', '--clear'];
           if (process.env.SENTRY_AUTH_TOKEN !== '') {
             args.push('--source-maps');
           }
-          await exec.exec('pnpm', args, { cwd: core.getInput('working-directory') || process.cwd() });
+          await exec.exec('pnpm', args, { cwd: process.env.WORKING_DIRECTORY });
 
     - name: Upload source maps to Sentry
       if: ${{ steps.setup-vars.outputs.sentry-auth-token != '' }}
@@ -66,11 +70,13 @@ runs:
         SENTRY_AUTH_TOKEN: ${{ steps.setup-vars.outputs.sentry-auth-token }}
       run: pnpm -s exec sentry-expo-upload-sourcemaps build
       shell: bash
-      working-directory: ${{ inputs.working-directory || github.workspace }}
+      working-directory: ${{ steps.setup-vars.outputs.working-directory }}
 
     - name: Deploy web app
       uses: actions/github-script@v8
       id: deployment
+      env:
+        WORKING_DIRECTORY: ${{ steps.setup-vars.outputs.working-directory }}
       with:
         script: |
           const args = ['deploy', '--export-dir=build', '--json', '--non-interactive'];
@@ -82,7 +88,7 @@ runs:
               args.push(`--alias=${alias}`);
             }
           }
-          const { stdout } = await exec.getExecOutput('eas', args, { cwd: core.getInput('working-directory') || process.cwd() });
+          const { stdout } = await exec.getExecOutput('eas', args, { cwd: process.env.WORKING_DIRECTORY });
           return JSON.parse(stdout);
 
     - name: Upload deployment artifact
@@ -90,5 +96,5 @@ runs:
       id: upload
       with:
         name: ${{ steps.setup-vars.outputs.artifact-name }}.zip
-        path: ${{ inputs.working-directory || github.workspace }}/build
+        path: ${{ steps.setup-vars.outputs.working-directory }}/build
         retention-days: 7

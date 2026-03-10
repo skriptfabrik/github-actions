@@ -49,7 +49,10 @@ runs:
     - name: Setup variables
       id: setup-vars
       run: |
-        echo "artifact-name=$(basename '${{ inputs.working-directory || github.workspace }}')" >> $GITHUB_OUTPUT
+        # Determine artifact name prefix and working directory
+        working_directory="${{ inputs.working-directory || env.EAS_WORKING_DIRECTORY || github.workspace }}"
+        echo "artifact-name=$(basename $working_directory)" >> $GITHUB_OUTPUT
+        echo "working-directory=$working_directory" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Build app
@@ -57,6 +60,7 @@ runs:
       id: build
       env:
         ARTIFACT_NAME: ${{ steps.setup-vars.outputs.artifact-name }}
+        WORKING_DIRECTORY: ${{ steps.setup-vars.outputs.working-directory }}
       with:
         script: |
           const args = ['build', '--json', '--non-interactive'];
@@ -79,15 +83,16 @@ runs:
           } else {
             args.push('--wait');
           }
-          const { stdout } = await exec.getExecOutput('eas', args, { cwd: core.getInput('working-directory') || process.cwd() });
+          const { stdout } = await exec.getExecOutput('eas', args, { cwd: process.env.WORKING_DIRECTORY });
           return JSON.parse(stdout);
 
     - name: Download app
       if: ${{ steps.build.outputs.result && inputs.local != 'true' }}
       env:
         ARTIFACT_NAME: ${{ steps.setup-vars.outputs.artifact-name }}
-        WORKING_DIRECTORY: ${{ inputs.working-directory || github.workspace }}
+        WORKING_DIRECTORY: ${{ steps.setup-vars.outputs.working-directory }}
       run: |
+        # Create build directory and download the artifact
         mkdir -p ${WORKING_DIRECTORY}/build
         if [ "${{ fromJson(steps.build.outputs.result)[0].buildProfile }}" = "production" ]; then
           curl -fLs ${{ fromJson(steps.build.outputs.result)[0].artifacts.buildUrl }} --output ${WORKING_DIRECTORY}/build/${ARTIFACT_NAME}.aab
@@ -101,5 +106,5 @@ runs:
       id: upload
       with:
         name: ${{ steps.setup-vars.outputs.artifact-name }}.zip
-        path: ${{ inputs.working-directory || github.workspace }}/build
+        path: ${{ steps.setup-vars.outputs.working-directory }}/build
         retention-days: 7

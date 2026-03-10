@@ -52,4 +52,4 @@ runs:
       with:
         command: eas update --auto --branch ${{ github.head_ref || github.ref_name }} --non-interactive
         comment: false
-        working-directory: ${{ inputs.working-directory || github.workspace }}
+        working-directory: ${{ inputs.working-directory || env.EAS_WORKING_DIRECTORY || github.workspace }}
