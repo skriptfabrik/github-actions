@@ -49,15 +49,15 @@ inputs:
 outputs:
   node-version:
     description: The installed node version
-    value: ${{ steps.versions.outputs.node-version }}
+    value: ${{ steps.export.outputs.node-version }}
 
   pnpm-version:
     description: The installed PNPM version
-    value: ${{ steps.versions.outputs.pnpm-version }}
+    value: ${{ steps.export.outputs.pnpm-version }}
 
   turbo-version:
     description: The installed Turbo version
-    value: ${{ steps.versions.outputs.turbo-version }}
+    value: ${{ steps.export.outputs.turbo-version }}
 
 runs:
   using: composite
@@ -117,8 +117,8 @@ runs:
       run: pnpm install --frozen-lockfile
       shell: bash
 
-    - name: Export version information
-      id: versions
+    - name: Export outputs
+      id: export
       run: |
         node_version=${{ steps.setup-node.outputs.node-version }}
         echo "Installed Node.js version: $node_version"
