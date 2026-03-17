@@ -23,7 +23,7 @@ inputs:
     required: true
 
   platform:
-    description: Platform to build for (all/android/ios/web)
+    description: Platform to build for (all/android/ios)
     default: all
 
   working-directory:
@@ -41,7 +41,7 @@ runs:
     - name: Setup variables
       id: setup-vars
       run: |
-        # Determine EAS version to install and working directory
+        # Setup variables
         working_directory="${{ inputs.working-directory || env.EAS_WORKING_DIRECTORY || github.workspace }}"
         if [ "${{ inputs.eas-version-file }}" != "" ]; then
           echo "eas-version=$(cat '${{ inputs.eas-version-file }}')" >> $GITHUB_OUTPUT
@@ -61,35 +61,46 @@ runs:
         packager: pnpm
         token: ${{ inputs.expo-token }}
 
-    - name: Setup app
+    - name: Configure EAS project
+      if: ${{ inputs.eas-project-id != '' }}
       run: |
-        # Link EAS project and configure EAS for the specified platform and environment
-        if [ ! -f "app.json" ]; then
-          echo "No app.json found. Please make sure you are in the correct directory or specify the working-directory input."
-          exit 1
-        fi
-        if [ "${{ inputs.eas-project-id }}" != "" ]; then
-          eas init --id=${{ inputs.eas-project-id }} --force --non-interactive
-        fi
-        if [ "${{ inputs.platform }}" != "" ]; then
-          eas build:configure --platform=${{ inputs.platform }}
-          if [ "${{ inputs.environment }}" != "" ]; then
-            eas update:configure --platform=${{ inputs.platform }} --environment=${{ inputs.environment }} --non-interactive
-          else
-            eas update:configure --platform=${{ inputs.platform }} --non-interactive
-          fi
+        # Configure EAS project
+        eas init --id=${{ inputs.eas-project-id }} --force --non-interactive
+      shell: bash
+      working-directory: ${{ steps.setup-vars.outputs.working-directory }}
+
+    - name: Configure EAS project to support EAS build
+      if: ${{ inputs.platform != '' }}
+      run: |
+        # Configure EAS project to support EAS build
+        eas build:configure --platform=${{ inputs.platform }}
+      shell: bash
+      working-directory: ${{ steps.setup-vars.outputs.working-directory }}
+
+    - name: Configure EAS project to support EAS update
+      if: ${{ inputs.platform != '' }}
+      run: |
+        # Configure EAS project to support EAS update
+        if [ "${{ inputs.environment }}" != "" ]; then
+          eas update:configure --platform=${{ inputs.platform }} --environment=${{ inputs.environment }} --non-interactive
+        else
+          eas update:configure --platform=${{ inputs.platform }} --non-interactive
         fi
       shell: bash
       working-directory: ${{ steps.setup-vars.outputs.working-directory }}
 
     - name: Pull environment variables
       if: ${{ inputs.environment != '' }}
-      run: eas env:pull --environment=${{ inputs.environment }} --non-interactive
+      run: |
+        # Pull environment variables
+        eas env:pull --environment=${{ inputs.environment }} --non-interactive
       shell: bash
       working-directory: ${{ steps.setup-vars.outputs.working-directory }}
 
     - name: Export EAS environment variables
-      run: echo "EAS_WORKING_DIRECTORY=$(realpath ${{ steps.setup-vars.outputs.working-directory }})" >> $GITHUB_ENV
+      run: |
+        # Export EAS environment variables
+        echo "EAS_WORKING_DIRECTORY=$(realpath ${{ steps.setup-vars.outputs.working-directory }})" >> $GITHUB_ENV
       shell: bash
 
     - name: Export outputs

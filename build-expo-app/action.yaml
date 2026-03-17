@@ -49,7 +49,7 @@ runs:
     - name: Setup variables
       id: setup-vars
       run: |
-        # Determine artifact name prefix and working directory
+        # Setup variables
         working_directory="${{ inputs.working-directory || env.EAS_WORKING_DIRECTORY || github.workspace }}"
         echo "artifact-name=$(basename $working_directory)" >> $GITHUB_OUTPUT
         echo "working-directory=$working_directory" >> $GITHUB_OUTPUT
