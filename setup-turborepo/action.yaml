@@ -78,7 +78,7 @@ runs:
       shell: bash
 
     - name: Setup PNPM
-      uses: pnpm/action-setup@v4
+      uses: pnpm/action-setup@v5
       with:
         version: ${{ inputs.pnpm-version }}
 
