@@ -6,6 +6,10 @@ inputs:
     description: Run build locally?
     default: "false"
 
+  platform:
+    description: Platform to build for (all/android/ios)
+    required: false
+
   profile:
     description: Name of the build profile
     required: false
@@ -64,6 +68,12 @@ runs:
       with:
         script: |
           const args = ['build', '--json', '--non-interactive'];
+          const platform = core.getInput('platform');
+          if (platform !== '') {
+            args.push(`--platform=${ platform }`);
+          } else if (process.env.EAS_PLATFORM) {
+            args.push(`--platform=${ process.env.EAS_PLATFORM }`);
+          }
           const profile = core.getInput('profile');
           if (profile !== '') {
             args.push(`--profile=${ profile }`);

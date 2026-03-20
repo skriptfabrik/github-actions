@@ -46,4 +46,5 @@ jobs:
 
 | Name                    | Description                                           |
 | ----------------------- | ----------------------------------------------------- |
+| `EAS_PLATFORM`          | Name of the configured platform                       |
 | `EAS_WORKING_DIRECTORY` | The file path to the pulled EAS environment variables |

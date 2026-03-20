@@ -35,6 +35,7 @@ jobs:
 | Name                | Required | Default   | Description                                                |
 | ------------------- | -------- | --------- | ---------------------------------------------------------- |
 | `local`             | `false`  | `"false"` | Run build locally?                                         |
+| `platform`          | `false`  | `""`      | Name of the platform to build (all/android/ios)            |
 | `profile`           | `false`  | `""`      | Name of the build profile                                  |
 | `submit`            | `false`  | `"false"` | Auto submit to the store? (production profile only)        |
 | `working-directory` | `false`  | `""`      | Working directory for the build command                    |

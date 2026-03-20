@@ -100,6 +100,7 @@ runs:
     - name: Export EAS environment variables
       run: |
         # Export EAS environment variables
+        echo "EAS_PLATFORM=${{ inputs.platform }}" >> $GITHUB_ENV
         echo "EAS_WORKING_DIRECTORY=$(realpath ${{ steps.setup-vars.outputs.working-directory }})" >> $GITHUB_ENV
       shell: bash
 
