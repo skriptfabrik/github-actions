@@ -1,2 +1,5 @@
 # GitHub Actions files
 action.yaml           @skriptfabrik/github-actions-maintainers
+
+# Devcontainer configuration
+/.devcontainer/       @skriptfabrik/devcontainer-maintainers

@@ -1,0 +1,11 @@
+[settings]
+idiomatic_version_file_enable_tools = ["node"]
+
+[env]
+COREPACK_ENABLE_DOWNLOAD_PROMPT = "0"
+
+[hooks]
+postinstall = """
+npx corepack enable
+pnpm config set store-dir ~/.local/share/pnpm/store
+"""
