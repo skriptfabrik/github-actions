@@ -76,16 +76,16 @@ runs:
       uses: actions/github-script@v8
       id: deployment
       env:
+        ALIAS: ${{ inputs.alias }}
         WORKING_DIRECTORY: ${{ steps.setup-vars.outputs.working-directory }}
       with:
         script: |
           const args = ['deploy', '--export-dir=build', '--json', '--non-interactive'];
-          const alias = core.getInput('alias');
-          if (alias !== '') {
-            if (alias === 'production') {
+          if (process.env.ALIAS) {
+            if (process.env.ALIAS === 'production') {
               args.push('--prod');
             } else {
-              args.push(`--alias=${alias}`);
+              args.push(`--alias=${ process.env.ALIAS }`);
             }
           }
           const { stdout } = await exec.getExecOutput('eas', args, { cwd: process.env.WORKING_DIRECTORY });

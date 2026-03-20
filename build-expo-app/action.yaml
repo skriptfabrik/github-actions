@@ -64,28 +64,26 @@ runs:
       id: build
       env:
         ARTIFACT_NAME: ${{ steps.setup-vars.outputs.artifact-name }}
+        LOCAL: ${{ inputs.local }}
+        PLATFORM: ${{ inputs.platform || env.EAS_PLATFORM }}
+        PROFILE: ${{ inputs.profile }}
+        SUBMIT: ${{ inputs.submit }}
         WORKING_DIRECTORY: ${{ steps.setup-vars.outputs.working-directory }}
       with:
         script: |
           const args = ['build', '--json', '--non-interactive'];
-          const platform = core.getInput('platform');
-          if (platform !== '') {
-            args.push(`--platform=${ platform }`);
-          } else if (process.env.EAS_PLATFORM) {
-            args.push(`--platform=${ process.env.EAS_PLATFORM }`);
+          if (process.env.PLATFORM) {
+            args.push(`--platform=${ process.env.PLATFORM }`);
           }
-          const profile = core.getInput('profile');
-          if (profile !== '') {
-            args.push(`--profile=${ profile }`);
+          if (process.env.PROFILE) {
+            args.push(`--profile=${ process.env.PROFILE }`);
           }
-          const submit = core.getInput('submit');
-          if (profile === 'production' && submit === 'true') {
+          if (process.env.PROFILE === 'production' && process.env.SUBMIT === 'true') {
             args.push('--auto-submit');
           }
-          const local = core.getInput('local');
-          if (local === 'true') {
+          if (process.env.LOCAL === 'true') {
             args.push('--local');
-            if (profile === 'production') {
+            if (process.env.PROFILE === 'production') {
               args.push(`--output=build/${ process.env.ARTIFACT_NAME }.aab`);
             } else {
               args.push(`--output=build/${ process.env.ARTIFACT_NAME }.apk`);
