@@ -4,6 +4,7 @@ updates:
   - package-ecosystem: github-actions
     directories:
       - /
+      - /build-docker-image
       - /build-expo-app
       - /deploy-expo-app
       - /setup-eas
