@@ -133,7 +133,7 @@ runs:
         pnpm_version=$(pnpm --version)
         echo "Installed PNPM version: $pnpm_version"
         echo "pnpm-version=$pnpm_version" >> $GITHUB_OUTPUT
-        turbo_version=$(pnpm ls --depth 0 turbo | grep -e '^turbo' | cut -d' ' -f2)
+        turbo_version=$(pnpm ls --depth 0 --json turbo | jq -r '.[0].dependencies.turbo.version,.[0].devDependencies.turbo.version | select(. != null)')
         echo "Installed Turbo version: $turbo_version"
         echo "turbo-version=$turbo_version" >> $GITHUB_OUTPUT
       shell: bash
