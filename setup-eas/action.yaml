@@ -54,12 +54,30 @@ runs:
       shell: bash
 
     - name: Setup EAS
-      uses: expo/expo-github-action@c7b66a9c327a43a8fa7c0158e7f30d6040d2481e # v8.2.1
-      with:
-        eas-version: ${{ steps.setup-vars.outputs.eas-version }}
-        eas-cache: false
-        packager: pnpm
-        token: ${{ inputs.expo-token }}
+      env:
+        EXPO_TOKEN: ${{ inputs.expo-token }}
+      run: |
+        # Install EAS CLI
+        if [ "${{ steps.setup-vars.outputs.eas-version }}" != "" ]; then
+          echo "::group::Installing EAS CLI"
+          pnpm add --global --ignore-scripts eas-cli@${{ steps.setup-vars.outputs.eas-version }}
+          echo "::endgroup::"
+        fi
+        # Validate that the token is correct and can be used to authenticate with Expo
+        echo "::group::Validating authenticated account"
+        eas whoami
+        echo "::endgroup::"
+        # Patch watchers
+        # see https://github.com/expo/expo-cli/issues/277#issuecomment-452685177
+        echo "::group::Patching system watchers for the 'ENOSPC' error"
+        sudo sysctl fs.inotify.max_user_instances=524288
+        sudo sysctl fs.inotify.max_user_watches=524288
+        sudo sysctl fs.inotify.max_queued_events=524288
+        sudo sysctl -p
+        echo "::endgroup::"
+        # Export Expo token
+        echo "EXPO_TOKEN=${EXPO_TOKEN}" >> $GITHUB_ENV
+      shell: bash
 
     - name: Configure EAS project
       if: ${{ inputs.eas-project-id != '' }}
