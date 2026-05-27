@@ -89,14 +89,25 @@ runs:
         push: ${{ inputs.push }}
         tags: ${{ steps.metadata.outputs.tags }}
 
+    - name: Export metadata
+      id: export
+      run: |
+        metadata_file=$(mktemp)
+        cat <<'EOF' >$metadata_file
+        ${{ steps.build.outputs.metadata }}
+        EOF
+        echo "metadata-file=$metadata_file" >> $GITHUB_OUTPUT
+      shell: bash
+
     - name: Summarize results
       id: summary
       uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
       env:
-        METADATA: ${{ steps.build.outputs.metadata }}
+        METADATA_FILE: ${{ steps.export.outputs.metadata-file }}
       with:
         script: |
-          const metadata = JSON.parse(process.env.METADATA);
+          const fs = require('fs');
+          const metadata = JSON.parse(fs.readFileSync(process.env.METADATA_FILE, 'utf8'));
           const digest = metadata['containerimage.digest'];
           const [image, ...images] = metadata['image.name'].split(',');
           const additionalImages = images.join(',');
