@@ -48,7 +48,7 @@ runs:
   steps:
     - name: Update app
       id: update
-      uses: expo/expo-github-action/preview@c7b66a9c327a43a8fa7c0158e7f30d6040d2481e # v8.2.1
+      uses: expo/expo-github-action/preview@eab7a230208c952974db8c3245cfd78402c7b385 # v9
       with:
         command: eas update --auto --branch ${{ github.head_ref || github.ref_name }} --non-interactive
         comment: false
