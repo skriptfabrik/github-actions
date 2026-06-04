@@ -25,15 +25,15 @@ outputs:
 
   dashboard-url:
     description: URL to deployment dashboard
-    value: ${{ fromJson(steps.deployment.outputs.result).dashboardUrl }}
+    value: ${{ steps.deployment.outputs.result && fromJson(steps.deployment.outputs.result).dashboardUrl }}
 
   identifier:
     description: Deployment identifier
-    value: ${{ fromJson(steps.deployment.outputs.result).identifier }}
+    value: ${{ steps.deployment.outputs.result && fromJson(steps.deployment.outputs.result).identifier }}
 
   url:
     description: URL to deployment
-    value: ${{ fromJson(steps.deployment.outputs.result).url }}
+    value: ${{ steps.deployment.outputs.result && fromJson(steps.deployment.outputs.result).url }}
 
 runs:
   using: composite
