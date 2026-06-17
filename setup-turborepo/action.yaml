@@ -110,7 +110,7 @@ runs:
 
     - name: Setup Turbo cache server
       if: ${{ inputs.turbo-s3-bucket != '' }}
-      uses: brunojppb/turbo-cache-server@1fab88733a4d4bda5e3aa5c0079636a37696b1fe # 4.0.7
+      uses: brunojppb/turbo-cache-server@54dea557e25e9702d03960afaa627858e0286559 # 4.0.8
       env:
         PORT: "8585"
         S3_ENDPOINT: ${{ inputs.turbo-s3-endpoint }}
