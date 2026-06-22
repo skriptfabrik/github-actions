@@ -50,7 +50,7 @@ runs:
         # Setup variables
         image=ghcr.io/${{ github.repository }}
         if [ "${{ inputs.context }}" != "." ]; then
-          image="${images}/${{ inputs.context }}"
+          image="${image}/${{ inputs.context }}"
         fi
         echo "image=$image" >> $GITHUB_OUTPUT
       shell: bash
