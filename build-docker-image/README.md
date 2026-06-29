@@ -23,7 +23,7 @@ jobs:
 | Name           | Required | Default                   | Description                    |
 | -------------- | -------- | ------------------------- | ------------------------------ |
 | `context`      | `false`  | `.`                       | Build context                  |
-| `file`         | `false`  | `Dockerfile`              | Path to the Dockerfile         |
+| `file`         | `false`  | `{context}/Dockerfile`    | Path to the Dockerfile         |
 | `platforms`    | `false`  | `linux/amd64,linux/arm64` | Platforms to build for         |
 | `push`         | `false`  | `"true"`                  | Push the image to the registry |
 | `tags`         | `false`  | `type=sha`                | Tags to apply to the image     |

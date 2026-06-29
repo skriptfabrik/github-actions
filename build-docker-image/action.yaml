@@ -83,7 +83,7 @@ runs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
         context: ${{ inputs.context }}
-        file: ${{ inputs.file }}
+        file: ${{ inputs.context }}/${{ inputs.file }}
         labels: ${{ steps.metadata.outputs.labels }}
         platforms: ${{ inputs.platforms }}
         push: ${{ inputs.push }}
