@@ -20,13 +20,16 @@ jobs:
 
 ## Inputs
 
-| Name           | Required | Default                   | Description                    |
-| -------------- | -------- | ------------------------- | ------------------------------ |
-| `context`      | `false`  | `.`                       | Build context                  |
-| `file`         | `false`  | `{context}/Dockerfile`    | Path to the Dockerfile         |
-| `platforms`    | `false`  | `linux/amd64,linux/arm64` | Platforms to build for         |
-| `push`         | `false`  | `"true"`                  | Push the image to the registry |
-| `tags`         | `false`  | `type=sha`                | Tags to apply to the image     |
+| Name           | Required | Default                   | Description                       |
+| -------------- | -------- | ------------------------- | --------------------------------- |
+| `build-args`   | `false`  | `""`                      | List of build arguments           |
+| `context`      | `false`  | `.`                       | Build context                     |
+| `file`         | `false`  | `{context}/Dockerfile`    | Path to the Dockerfile            |
+| `labels`       | `false`  | `""`                      | List of custom labels             |
+| `name`         | `false`  | `""`                      | Name (suffix) of the Docker image |
+| `platforms`    | `false`  | `linux/amd64,linux/arm64` | Platforms to build for            |
+| `push`         | `false`  | `"true"`                  | Push the image to the registry    |
+| `tags`         | `false`  | `type=sha`                | Tags to apply to the image        |
 
 ## Outputs
 

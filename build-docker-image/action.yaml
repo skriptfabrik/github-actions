@@ -2,6 +2,10 @@ name: Build Docker Image
 description: Build and push a Docker image to GitHub Container Registry
 
 inputs:
+  build-args:
+    description: Additional build arguments
+    default: ""
+
   context:
     description: Build context
     default: .
@@ -10,8 +14,12 @@ inputs:
     description: Path to the Dockerfile
     default: Dockerfile
 
-  build-args:
-    description: Additional build arguments
+  labels:
+    description: Additional labels to add to the Docker image
+    default: ""
+
+  name:
+    description: Name of the Docker image
     default: ""
 
   platforms:
@@ -52,6 +60,9 @@ runs:
         if [ "${{ inputs.context }}" != "." ]; then
           image="${image}/${{ inputs.context }}"
         fi
+        if [ -n "${{ inputs.name }}" ]; then
+          image="${image}/${{ inputs.name }}"
+        fi
         echo "image=$image" >> $GITHUB_OUTPUT
       shell: bash
 
@@ -73,6 +84,7 @@ runs:
       uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6.1.0
       with:
         images: ${{ steps.setup-vars.outputs.image }}
+        labels: ${{ inputs.labels }}
         tags: ${{ inputs.tags }}
 
     - name: Build and push image
