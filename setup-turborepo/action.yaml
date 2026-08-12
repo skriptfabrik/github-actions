@@ -112,6 +112,7 @@ runs:
       if: ${{ inputs.turbo-s3-bucket != '' }}
       uses: brunojppb/turbo-cache-server@2c9f99f491f8803c228e2044c9c3daf5d2401d0c # 4.0.12
       env:
+        OTEL_SDK_DISABLED: "true"
         PORT: "8585"
         S3_ENDPOINT: ${{ inputs.turbo-s3-endpoint }}
         S3_REGION: ${{ inputs.turbo-s3-region }}
