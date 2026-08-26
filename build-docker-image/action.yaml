@@ -117,7 +117,7 @@ runs:
         script: |
           const fs = require('fs');
           const metadata = JSON.parse(fs.readFileSync(process.env.METADATA_FILE, 'utf8'));
-          const digest = metadata['containerimage.digest'];
-          const [image, ...images] = metadata['image.name'].split(',');
+          const digest = metadata['containerimage.digest'] || '';
+          const [image, ...images] = (metadata['image.name'] || '').split(',');
           const additionalImages = images.join(',');
           return { digest, image, additionalImages };
