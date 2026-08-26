@@ -57,9 +57,6 @@ runs:
       run: |
         # Setup variables
         image=ghcr.io/${{ github.repository }}
-        if [ "${{ inputs.context }}" != "." ]; then
-          image="${image}/${{ inputs.context }}"
-        fi
         if [ -n "${{ inputs.name }}" ]; then
           image="${image}/${{ inputs.name }}"
         fi
