@@ -92,19 +92,24 @@ runs:
         registry-url: ${{ inputs.node-registry-url }}
 
     - name: Export Turbo environment variables
-      if: ${{ inputs.turbo-s3-bucket != '' }}
       run: |
         # Export Turbo environment variables
-        echo "TURBO_API=http://127.0.0.1:8585" >> $GITHUB_ENV
         if [ "${{ github.event_name }}" == "pull_request" ]; then
           echo "TURBO_SCM_BASE=${{ github.event.pull_request.base.sha }}" >> $GITHUB_ENV
         fi
+        echo "TURBO_TELEMETRY_DISABLED=1" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Export Turbo cache server environment variables
+      if: ${{ inputs.turbo-s3-bucket != '' }}
+      run: |
+        # Export Turbo cache server environment variables
+        echo "TURBO_API=http://127.0.0.1:8585" >> $GITHUB_ENV
         if [ "${{ inputs.turbo-team }}" == "" ]; then
           echo "TURBO_TEAM=${{ github.repository }}" >> $GITHUB_ENV
         else
           echo "TURBO_TEAM=${{ inputs.turbo-team }}" >> $GITHUB_ENV
         fi
-        echo "TURBO_TELEMETRY_DISABLED=1" >> $GITHUB_ENV
         echo "TURBO_TOKEN=${{ inputs.turbo-token }}" >> $GITHUB_ENV
       shell: bash
 
