@@ -64,6 +64,12 @@ runs:
           }
           await exec.exec('pnpm', args, { cwd: process.env.WORKING_DIRECTORY });
 
+    - name: Inject Sentry debug IDs
+      if: ${{ steps.setup-vars.outputs.sentry-auth-token != '' }}
+      run: pnpm -s exec sentry-cli sourcemaps inject build
+      shell: bash
+      working-directory: ${{ steps.setup-vars.outputs.working-directory }}
+
     - name: Upload source maps to Sentry
       if: ${{ steps.setup-vars.outputs.sentry-auth-token != '' }}
       env:
