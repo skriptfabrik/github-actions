@@ -115,7 +115,7 @@ runs:
 
     - name: Setup Turbo cache server
       if: ${{ inputs.turbo-s3-bucket != '' }}
-      uses: brunojppb/turbo-cache-server@6cf8bdd71e8dfa40cfef03e44e97230478c1d7af # 4.0.17
+      uses: brunojppb/turbo-cache-server@9d40704507e9d747d992c59b06c85c386978a329 # 4.0.18
       env:
         OTEL_SDK_DISABLED: "true"
         PORT: "8585"
