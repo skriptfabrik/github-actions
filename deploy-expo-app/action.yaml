@@ -44,8 +44,9 @@ runs:
         # Setup variables
         working_directory="${{ inputs.working-directory || env.EAS_WORKING_DIRECTORY || github.workspace }}"
         echo "artifact-name=$(basename "$working_directory")" >> $GITHUB_OUTPUT
-        if [ -n "$EAS_WORKING_DIRECTORY" ] && [ -f "$EAS_WORKING_DIRECTORY/.env.local" ]; then
-          echo "sentry-auth-token=$(grep SENTRY_AUTH_TOKEN "$EAS_WORKING_DIRECTORY/.env.local" | cut -d= -f2-)" >> $GITHUB_OUTPUT
+        if [ -n "$working_directory" ] && [ -f "$working_directory/.env.local" ]; then
+          echo "sentry-auth-token=$(grep -m1 '^SENTRY_AUTH_TOKEN=' "$working_directory/.env.local" | cut -d= -f2- || true)" >> "$GITHUB_OUTPUT"
+          echo "expo-server-sentry-project=$(grep -m1 '^EXPO_SERVER_SENTRY_PROJECT=' "$working_directory/.env.local" | cut -d= -f2- || true)" >> "$GITHUB_OUTPUT"
         fi
         echo "working-directory=$working_directory" >> $GITHUB_OUTPUT
       shell: bash
@@ -74,7 +75,16 @@ runs:
       if: ${{ steps.setup-vars.outputs.sentry-auth-token != '' }}
       env:
         SENTRY_AUTH_TOKEN: ${{ steps.setup-vars.outputs.sentry-auth-token }}
-      run: pnpm -s exec sentry-expo-upload-sourcemaps build
+      run: pnpm -s exec sentry-expo-upload-sourcemaps $([ -d build/client ] && echo "build/client" || echo "build")
+      shell: bash
+      working-directory: ${{ steps.setup-vars.outputs.working-directory }}
+
+    - name: Upload server source maps to Sentry
+      if: ${{ steps.setup-vars.outputs.sentry-auth-token != '' }}
+      env:
+        SENTRY_AUTH_TOKEN: ${{ steps.setup-vars.outputs.sentry-auth-token }}
+        SENTRY_PROJECT: ${{ steps.setup-vars.outputs.expo-server-sentry-project }}
+      run: '[ -d build/server ] && pnpm -s exec sentry-expo-upload-sourcemaps build/server'
       shell: bash
       working-directory: ${{ steps.setup-vars.outputs.working-directory }}
 
