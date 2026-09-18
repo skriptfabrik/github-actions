@@ -80,11 +80,11 @@ runs:
       working-directory: ${{ steps.setup-vars.outputs.working-directory }}
 
     - name: Upload server source maps to Sentry
-      if: ${{ steps.setup-vars.outputs.sentry-auth-token != '' }}
+      if: ${{ steps.setup-vars.outputs.sentry-auth-token != '' && steps.setup-vars.outputs.expo-server-sentry-project != '' }}
       env:
         SENTRY_AUTH_TOKEN: ${{ steps.setup-vars.outputs.sentry-auth-token }}
         SENTRY_PROJECT: ${{ steps.setup-vars.outputs.expo-server-sentry-project }}
-      run: '[ -d build/server ] && pnpm -s exec sentry-expo-upload-sourcemaps build/server'
+      run: '[ -d build/server ] && pnpm -s exec sentry-expo-upload-sourcemaps build/server || true'
       shell: bash
       working-directory: ${{ steps.setup-vars.outputs.working-directory }}
 
