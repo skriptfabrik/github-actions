@@ -1,11 +1,11 @@
 # build-docker-image
 
-> Build and push a Docker image to GitHub Container Registry
+> Build and push a Docker image to the Container Registry
 
 This action provides the following functionality for GitHub Actions users:
 
 * Build Docker image
-* Push Docker image to GitHub Container Registry
+* Push Docker image to the Container Registry
 
 ## Usage
 
@@ -20,16 +20,20 @@ jobs:
 
 ## Inputs
 
-| Name           | Required | Default                   | Description                    |
-| -------------- | -------- | ------------------------- | ------------------------------ |
-| `build-args`   | `false`  | `""`                      | List of build arguments        |
-| `context`      | `false`  | `.`                       | Build context                  |
-| `file`         | `false`  | `{context}/Dockerfile`    | Path to the Dockerfile         |
-| `labels`       | `false`  | `""`                      | List of custom labels          |
-| `name`         | `false`  | `""`                      | Name of the Docker image       |
-| `platforms`    | `false`  | `linux/amd64,linux/arm64` | Platforms to build for         |
-| `push`         | `false`  | `"true"`                  | Push the image to the registry |
-| `tags`         | `false`  | `type=sha`                | Tags to apply to the image     |
+| Name                | Required | Default                    | Description                         |
+| ------------------- | -------- | -------------------------- | ----------------------------------- |
+| `build-args`        | `false`  | `""`                       | List of build arguments             |
+| `context`           | `false`  | `.`                        | Build context                       |
+| `file`              | `false`  | `{context}/Dockerfile`     | Path to the Dockerfile              |
+| `labels`            | `false`  | `""`                       | List of custom labels               |
+| `name`              | `false`  | `""`                       | Name of the Docker image            |
+| `platforms`         | `false`  | `linux/amd64,linux/arm64`  | Platforms to build for              |
+| `push`              | `false`  | `"true"`                   | Push the image to the registry      |
+| `registry`          | `false`  | `ghcr.io`                  | Registry to push the image to       |
+| `registry-password` | `false`  | `""`                       | Password or token for the registry  |
+| `registry-username` | `false`  | `""`                       | Username for the registry           |
+| `repository`        | `false`  | `""`                       | Image repository without registry   |
+| `tags`              | `false`  | `type=sha`                 | Tags to apply to the image          |
 
 ## Outputs
 
