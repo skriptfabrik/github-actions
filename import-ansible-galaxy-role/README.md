@@ -4,8 +4,7 @@
 
 This action provides the following functionality for GitHub Actions users:
 
-* Setup Python
-* Install ansible-core
+* Setup Python and install ansible-core with uv
 * Import an Ansible role to Ansible Galaxy
 
 ## Usage
