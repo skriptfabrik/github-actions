@@ -1,0 +1,23 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [":gitSignOff", "schedule:weekly"],
+  "enabledManagers": [
+    "devcontainer",
+    "github-actions"
+  ],
+  "labels": ["dependencies"],
+  "packageRules": [
+    {
+      "matchManagers": ["devcontainer"],
+      "addLabels": ["devcontainer"]
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "addLabels": ["github_actions"]
+    }
+  ],
+  "prBodyTemplate": "{{{header}}}{{{table}}}{{{warnings}}}{{{notes}}}{{{changelogs}}}{{{controls}}}{{{footer}}}",
+  "prConcurrentLimit": 0,
+  "prHourlyLimit": 0,
+  "timezone": "Europe/Berlin"
+}
