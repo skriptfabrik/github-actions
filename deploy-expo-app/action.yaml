@@ -88,6 +88,11 @@ runs:
       shell: bash
       working-directory: ${{ steps.setup-vars.outputs.working-directory }}
 
+    - name: Remove server source maps from build
+      run: '[ -d build/server ] && find build/server -type f -name "*.map" -delete || true'
+      shell: bash
+      working-directory: ${{ steps.setup-vars.outputs.working-directory }}
+
     - name: Deploy web app
       uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
       id: deployment

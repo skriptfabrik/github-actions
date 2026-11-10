@@ -6,6 +6,7 @@ This action provides the following functionality for GitHub Actions users:
 
 * Export app with Expo
 * Upload client and server source maps to separate Sentry projects (optional)
+* Remove server source maps before deploying
 * Deploy web app using EAS
 * Upload deployment artifact
 
@@ -40,6 +41,12 @@ Add the following to `.env.local` in the working directory to enable this:
 | ----------------------------- | ------------------------------------ | --------------------------------------------- |
 | `SENTRY_AUTH_TOKEN`           | No (enables the feature)             | Sentry auth token used for source map upload  |
 | `EXPO_SERVER_SENTRY_PROJECT`  | Only if the app has a server bundle  | Sentry project slug for server/API source maps |
+
+## Removing server source maps
+
+EAS Hosting rejects a deployment whose server source maps exceed 60 MiB in
+total. Expo bundles every API route on its own, each with all of its
+dependencies, so an app with many API routes can reach that limit.
 
 ## Usage
 
