@@ -1,0 +1,19 @@
+[settings]
+idiomatic_version_file_enable_tools = ["node", "pnpm"]
+
+[env]
+_.path = ["{{config_root}}/node_modules/.bin"]
+PNPM_CONFIG_STORE_DIR = "~/.local/share/pnpm/store"
+
+[tools]
+gh = "2.103.3"
+
+[tasks.install]
+description = "Install dependencies"
+depends = ["pnpm-install"]
+
+[tasks.pnpm-install]
+description = "Install Node.js packages"
+run = "pnpm install"
+sources = ["package.json", "pnpm-lock.yaml", "mise.toml"]
+outputs = ["node_modules/.pnpm/lock.yaml"]

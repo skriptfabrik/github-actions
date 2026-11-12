@@ -1,19 +1,51 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [":gitSignOff", "schedule:weekly"],
-  "enabledManagers": [
-    "devcontainer",
-    "github-actions"
-  ],
+  "extends": ["config:recommended", ":gitSignOff", "schedule:weekly"],
+  "enabledManagers": ["devcontainer", "github-actions", "mise", "npm"],
   "labels": ["dependencies"],
+  "semanticCommits": "enabled",
+  "semanticCommitType": "chore",
+  "semanticCommitScope": null,
+  "lockFileMaintenance": {
+    "enabled": true
+  },
   "packageRules": [
     {
+      "description": "Devcontainer updates are applied on Sundays",
       "matchManagers": ["devcontainer"],
-      "addLabels": ["devcontainer"]
+      "addLabels": ["devcontainer"],
+      "schedule": ["* * * * 0"]
     },
     {
+      "description": "GitHub Actions are updated on Sundays",
       "matchManagers": ["github-actions"],
-      "addLabels": ["github_actions"]
+      "addLabels": ["github_actions"],
+      "schedule": ["* * * * 0"]
+    },
+    {
+      "description": "Tools pinned via mise are updated on Sundays",
+      "matchManagers": ["mise"],
+      "addLabels": ["mise"],
+      "schedule": ["* * * * 0"]
+    },
+    {
+      "description": "JavaScript dependencies are updated on Mondays once released for a day",
+      "matchManagers": ["npm"],
+      "addLabels": ["javascript"],
+      "minimumReleaseAge": "1 day",
+      "schedule": ["* * * * 1"]
+    },
+    {
+      "description": "Commitlint dependencies are grouped together",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["@commitlint/*"],
+      "groupName": "commitlint"
+    },
+    {
+      "description": "Lock file maintenance runs early on Mondays without a release age",
+      "matchUpdateTypes": ["lockFileMaintenance"],
+      "minimumReleaseAge": null,
+      "schedule": ["* 0-3 * * 1"]
     }
   ],
   "prBodyTemplate": "{{{header}}}{{{table}}}{{{warnings}}}{{{notes}}}{{{changelogs}}}{{{controls}}}{{{footer}}}",
