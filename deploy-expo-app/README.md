@@ -37,10 +37,10 @@ an `.env.local` file in the working directory. When enabled:
 
 Add the following to `.env.local` in the working directory to enable this:
 
-| Variable                     | Required                            | Description                                  |
-| ----------------------------- | ------------------------------------ | --------------------------------------------- |
-| `SENTRY_AUTH_TOKEN`           | No (enables the feature)             | Sentry auth token used for source map upload  |
-| `EXPO_SERVER_SENTRY_PROJECT`  | Only if the app has a server bundle  | Sentry project slug for server/API source maps |
+| Variable                     | Required                            | Description                                    |
+| ---------------------------- | ----------------------------------- | ---------------------------------------------- |
+| `SENTRY_AUTH_TOKEN`          | No (enables the feature)            | Sentry auth token used for source map upload   |
+| `EXPO_SERVER_SENTRY_PROJECT` | Only if the app has a server bundle | Sentry project slug for server/API source maps |
 
 ## Removing server source maps
 

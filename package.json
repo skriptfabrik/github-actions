@@ -1,0 +1,38 @@
+{
+  "name": "@skriptfabrik/github-actions",
+  "description": "Actions for GitHub",
+  "scripts": {
+    "fix:deps": "knip --fix",
+    "fix:files": "biome lint --fix",
+    "fix:markdown": "markdownlint-cli2 --fix",
+    "fix:versions": "syncpack fix-mismatches",
+    "format:files": "biome format --write",
+    "format:versions": "syncpack format",
+    "lint:commits": "commitlint",
+    "lint:deps": "knip",
+    "lint:files": "biome lint",
+    "lint:markdown": "markdownlint-cli2",
+    "lint:versions": "syncpack lint"
+  },
+  "keywords": [
+    "github",
+    "github-actions"
+  ],
+  "private": true,
+  "devDependencies": {
+    "@biomejs/biome": "^2.6.6",
+    "@commitlint/cli": "^21.2.4",
+    "@commitlint/config-conventional": "^21.2.4",
+    "knip": "^6.45.1",
+    "markdownlint-cli2": "^0.24.0",
+    "syncpack": "^15.3.3"
+  },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "26.13.1",
+      "onFail": "download"
+    }
+  },
+  "packageManager": "pnpm@12.18.0"
+}
