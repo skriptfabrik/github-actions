@@ -1,6 +1,15 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended", ":gitSignOff", "schedule:weekly"],
+  "extends": [
+    "config:recommended",
+    ":disableRateLimiting",
+    ":gitSignOff",
+    ":semanticCommits",
+    ":semanticPrefixChore",
+    ":semanticCommitScopeDisabled"
+  ],
+  "labels": ["dependencies"],
+  "timezone": "Europe/Berlin",
   "enabledManagers": [
     "custom.regex",
     "devcontainer",
@@ -19,10 +28,6 @@
       "extractVersionTemplate": "^v(?<version>.*)$"
     }
   ],
-  "labels": ["dependencies"],
-  "semanticCommits": "enabled",
-  "semanticCommitType": "chore",
-  "semanticCommitScope": null,
   "lockFileMaintenance": {
     "enabled": true
   },
@@ -72,9 +77,5 @@
       "minimumReleaseAge": null,
       "schedule": ["* 0-3 * * 1"]
     }
-  ],
-  "prBodyTemplate": "{{{header}}}{{{table}}}{{{warnings}}}{{{notes}}}{{{changelogs}}}{{{controls}}}{{{footer}}}",
-  "prConcurrentLimit": 0,
-  "prHourlyLimit": 0,
-  "timezone": "Europe/Berlin"
+  ]
 }
