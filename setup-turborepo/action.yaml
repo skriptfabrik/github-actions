@@ -106,7 +106,7 @@ runs:
         # Export Turbo cache server environment variables
         echo "TURBO_API=http://127.0.0.1:8585" >> $GITHUB_ENV
         if [ "${{ inputs.turbo-team }}" == "" ]; then
-          echo "TURBO_TEAM=${{ github.repository }}" >> $GITHUB_ENV
+          echo "TURBO_TEAM=${GITHUB_REPOSITORY////-}" >> $GITHUB_ENV
         else
           echo "TURBO_TEAM=${{ inputs.turbo-team }}" >> $GITHUB_ENV
         fi

@@ -37,7 +37,7 @@ jobs:
 | `turbo-s3-bucket`     | `false`  | `""`                       | S3 bucket name for Turbo cache server          |
 | `turbo-s3-access-key` | `false`  | `""`                       | S3 access key for Turbo cache server           |
 | `turbo-s3-secret-key` | `false`  | `""`                       | S3 secret key for Turbo cache server           |
-| `turbo-team`          | `false`  | `${{ github.repository }}` | The Turbo team to use for caching              |
+| `turbo-team`          | `false`  | `<owner>-<repo>`           | The Turbo team to use for caching              |
 | `turbo-token`         | `false`  | `""`                       | The value will be checked by the cache server  |
 
 ## Outputs
